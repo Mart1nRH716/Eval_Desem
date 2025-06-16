@@ -14,7 +14,7 @@ Este asignación son dos script para cargar: la tabla de evaluación y desempeñ
 ### Instalación
 1. **Clonar el repositorio:**
    ```bash
-   git clone 
+   git clone https://github.com/Mart1nRH716/Eval_Desem.git
    
 ## Instrucciones de Configuración
 2. **Crear un entorno virtual
