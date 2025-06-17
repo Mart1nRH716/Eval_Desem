@@ -20,7 +20,7 @@ TABLA_DESTINO = "ResultadosEvaluacionOOAD"
 def procesar_excel(ruta_archivo):
     #Leemos el archivo de Excel y lo almacenamos en nun dataFrame
     try:
-        
+        #Leemos los datos del excel en la hoja indicada
         df = pd.read_excel(ruta_archivo, sheet_name=HOJA_EXCEL)
         print(f"\nProcesando archivo: {os.path.basename(ruta_archivo)} - Filas: {len(df)}")
         
@@ -32,18 +32,15 @@ def procesar_excel(ruta_archivo):
                 raise ValueError(f"La columna '{col}' no se encuentra en el archivo Excel")
         
         # Agrupar por Delegación y tipo, 
-        df_agrupado = df.groupby(['Delegación', 'tipo'])['Calificación'].mean().reset_index()
-        df_agrupado = df_agrupado.sort_values(['tipo', 'Calificación'], ascending=[True, False])
-        
+        df_agrupado = df.groupby(['Delegación', 'tipo'])['Calificación'].mean().reset_index() #Devuelve el series en un DataFrame normal
+        df_agrupado = df_agrupado.sort_values(['tipo', 'Calificación'], ascending=[True, False]) #Ordena primero por tipo asc y despues por calificación desc
         # Asignar ranking dentro de cada grupo de tipo
-        df_agrupado['Lugar_que_ocupa'] = df_agrupado.groupby('tipo')['Calificación'].rank(ascending=False, method='min')
-        
+        df_agrupado['Lugar_que_ocupa'] = df_agrupado.groupby('tipo')['Calificación'].rank(ascending=False, method='min') #El valor mas alto tendra el 1(mayor a menor). En caso de empates, se repite el numero con el que empató
         # Unir el ranking al dataframe original
         df_final = pd.merge(df, df_agrupado[['Delegación', 'tipo', 'Lugar_que_ocupa']], 
                            on=['Delegación', 'tipo'], how='left')
-        
+        #Ordenos el data Frame final.
         df_final = df_final.sort_values(['tipo', 'Lugar_que_ocupa'])
-        
         return df_final
         
     except Exception as e:
@@ -57,10 +54,11 @@ def insertar_dataframe_sql(df, conexion_str, tabla_destino):
         return
     
     try:
+        #Creamos la conexión con la db y el cursor.
         conn = pyodbc.connect(conexion_str)
         cursor = conn.cursor()
         
-        # Creamo la tabla si no existe
+        # Creamos la tabla si no existe
         cursor.execute(f"""
         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{tabla_destino}' AND xtype='U')
         CREATE TABLE {tabla_destino} (
@@ -93,7 +91,7 @@ def insertar_dataframe_sql(df, conexion_str, tabla_destino):
                 row['Logro'], row['Lugar_que_ocupa'])
                 total_insertados += 1
             except pyodbc.IntegrityError:
-                print(f"Advertencia: Registro duplicado omitido - Delegación: {row['Delegación']}, Tipo: {row['tipo']}")
+                print(f"Advertencia: Registro duplicado omitido - Delegación: {row['Delegación']}, Tipo: {row['tipo']}, Mes: {row['mes_i']}")
                 continue
             except Exception as e:
                 print(f"Error al insertar registro: {e}")
@@ -113,7 +111,7 @@ def procesar_carpeta(carpeta):
     if not os.path.exists(carpeta):
         print(f"Error: La carpeta {carpeta} no existe")
         return
-    
+    #Obtenemos los nombres de los archivos dentro de la carpeta 
     archivos_excel = [f for f in os.listdir(carpeta) if f.endswith('.xlsx')]
     
     if not archivos_excel:

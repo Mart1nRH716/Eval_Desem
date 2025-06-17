@@ -35,6 +35,7 @@ def obtener_mes_anio(nombre_archivo):
     return mes, anio
 
 def leer_datos(ruta_archivo):
+    #Leemos el work_book, aquí no utilice pd debido a que queria extraer más elementos como el color de las celdas, además de leer los datos de acuerdo a las columnas especificadas
     wb = load_workbook(ruta_archivo, data_only=True)
     ws = wb.active
     mes, anio = obtener_mes_anio(ruta_archivo)
@@ -52,8 +53,8 @@ def leer_datos(ruta_archivo):
         for idx, col in enumerate(range(45, 62)):  # columnas AS a BI
             celda = ws.cell(row=fila, column=col)
             valor = celda.value
-            valor = valor if isinstance(valor, (int, float)) else -1
-            indicador = indicadores[idx] if idx < len(indicadores) else f"ind_{col}"
+            valor = valor if isinstance(valor, (int, float)) else -1 # El menos uno lo manejo para los datos que tienen la leyenda N/A (No aplica) ya que los datos None no es compatible en la tabla.
+            indicador = indicadores[idx] if idx < len(indicadores) else f"ind_{col}" #En caso de que nos pasemos pongo otro nombre
             registros.append({
                 'anio': anio,
                 'mes': mes,
