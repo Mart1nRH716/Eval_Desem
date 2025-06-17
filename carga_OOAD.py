@@ -24,7 +24,6 @@ def procesar_excel(ruta_archivo):
         df = pd.read_excel(ruta_archivo, sheet_name=HOJA_EXCEL)
         print(f"\nProcesando archivo: {os.path.basename(ruta_archivo)} - Filas: {len(df)}")
         
-        # Verificar columnas requeridas
         columnas_requeridas = ['Año', 'mes_i', 'cve_del', 'Delegación', 'tipo', 
                               'Proceso_Normativa', 'Ponderación', 'Calificación', 'Logro']
         
@@ -94,7 +93,6 @@ def insertar_dataframe_sql(df, conexion_str, tabla_destino):
                 row['Logro'], row['Lugar_que_ocupa'])
                 total_insertados += 1
             except pyodbc.IntegrityError:
-                # Si hay duplicados, puedes omitirlos o actualizarlos
                 print(f"Advertencia: Registro duplicado omitido - Delegación: {row['Delegación']}, Tipo: {row['tipo']}")
                 continue
             except Exception as e:
